@@ -1,0 +1,203 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Excercise4</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #c {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+</body>
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.148.0/examples/jsm/"
+    }
+  }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    
+        function main() {
+            const canvas = document.querySelector('#c');
+            const renderer = new THREE.WebGLRenderer({ canvas });
+    
+            const fov = 40;
+            const aspect = 2;  // the canvas default
+            const near = 0.1;
+            const far = 1000;
+            const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            camera.position.z = 300;
+    
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xAAAAAA);
+
+            //controls
+            let controls;
+            controls = new OrbitControls( camera, renderer.domElement );
+            
+
+    
+            const group = new THREE.Group();
+
+            function box(x, y, z, w, h, d)  {
+                const geometry = new THREE.BoxGeometry( w, h, d );
+                const material = new THREE.MeshBasicMaterial( {color: 0xe6e6fa} );
+                // const material = new THREE.MeshLambertMaterial({ color: 0xe6e6fa });
+                const cube = new THREE.Mesh( geometry, material );
+                cube.position.set(x,y,z);
+                // group.add(cube);
+                return cube;
+            }    
+
+            function sphere(x,y,z,w,h,d){
+                const geometry = new THREE.SphereGeometry(w, h, d);
+                const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+                const sphere = new THREE.Mesh( geometry, material );
+                sphere.position.set(x,y,z);
+                // scene.add( sphere );
+                return sphere;
+            }
+            //right_hand
+            const arm1R = box(-2, 0, 0, 16, 8, 8);
+            const joint_armR = sphere(-10,0,0,3,32,16);
+            const arm2R = box(-8, 0, 0, 16, 8, 8);
+            const joint_handR = sphere(-8,0,0,3,32,16);
+            const handR = box(-6,0,0,9,9,9);
+            const joint_sholderR = sphere(10,0,0,3,32,16);
+            group.add(arm1R);
+            arm1R.add(joint_armR);
+            joint_armR.add(arm2R);
+            arm2R.add(joint_handR);
+            joint_handR.add(handR);
+            // joint_sholderR.add(arm1R);
+            arm1R.add(joint_sholderR);
+
+            //upper body
+            const chest = box(10, -5, 0, 20, 20, 10);
+            joint_sholderR.add(chest);
+            const joint_head = sphere(0,10,0,3,32,16);
+            chest.add(joint_head);
+            const head= box(0, 8, 0, 12, 12, 12);
+            joint_head.add(head);
+            const joint_stomach = sphere(0,-10,0,3,32,16);
+            chest.add(joint_stomach)
+            const stomach = box(0,-8,0,14,14,10);
+            joint_stomach.add(stomach)
+            const joint_west = sphere(0,-6,0,3,32,16);
+            stomach.add(joint_west);
+
+            //left hand
+            const joint_sholderL = sphere(10,5,0,3,32,16);
+            const arm1L = box(10, 0, 0, 16, 8, 8);
+            const joint_armL = sphere(10,0,0,3,32,16);
+            const arm2L = box(8, 0, 0, 16, 8, 8);
+            const joint_handL = sphere(8,0,0,3,32,16);
+            const handL = box(6,0,0,9,9,9);
+            chest.add(joint_sholderL)
+            joint_sholderL.add(arm1L)
+            arm1L.add(joint_armL);
+            joint_armL.add(arm2L);
+            arm2L.add(joint_handL);
+            joint_handL.add(handL);
+
+            //lower body
+            const west = box(0, -5, 0, 20, 5, 10);
+            joint_west.add(west)
+            const joint_leg1R =sphere(-6,-3,0,3,32,16);
+            const joint_leg2R =sphere(0,-7,0,3,32,16);
+            const joint_footR =sphere(0,-7,0,3,32,16);
+            const leg1R = box(0, -8, 0, 8, 15, 10);
+            const leg2R = box(0,-10,0,8,15,10);
+            const footR = box(0,-6,1,8,6,12);
+            const joint_leg1L =sphere(6,-3,0,3,32,16);
+            const joint_leg2L =sphere(0,-7,0,3,32,16);
+            const joint_footL =sphere(0,-7,0,3,32,16);
+            const leg1L = box(0, -8, 0, 8, 15, 10);
+            const leg2L = box(0,-10,0,8,15,10);
+            const footL = box(0,-6,1,8,6,12);
+            west.add(joint_leg1R);
+            west.add(joint_leg1L);
+            joint_leg1R.add(leg1R);
+            joint_leg1L.add(leg1L);
+            leg1R.add(joint_leg2R);
+            leg1L.add(joint_leg2L);
+            joint_leg2R.add(leg2R);
+            joint_leg2L.add(leg2L);
+            leg2R.add(joint_footR);
+            leg2L.add(joint_footL);
+            joint_footR.add(footR);
+            joint_footL.add(footL);
+
+            scene.add( group );
+    
+            function resizeRendererToDisplaySize(renderer) {
+                const canvas = renderer.domElement;
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
+                const needResize = canvas.width !== width || canvas.height !== height;
+                if (needResize) {
+                    renderer.setSize(width, height, false);
+                }
+                return needResize;
+            }
+
+            let degree = 0;
+            function render() {
+                //回転させたい角度のラジアンを求める
+                const rotation = (degree * Math.PI) / 180;
+    
+                if (resizeRendererToDisplaySize(renderer)) {
+                    const canvas = renderer.domElement;
+                    camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                    camera.updateProjectionMatrix();
+                }
+
+                // group.rotation.y = rotation;
+                joint_armR.rotation.z = -Math.cos(rotation)+30;
+                joint_sholderL.rotation.y= -Math.cos(rotation)/3;
+                joint_armL.rotation.y = -Math.cos(rotation)/2+30;
+                joint_leg2R.rotation.x = -Math.cos(rotation)/2;
+                joint_leg2L.rotation.x = Math.cos(rotation)/2;
+                joint_stomach.rotation.z =  -Math.cos(rotation)/5;
+                joint_west.rotation.z =  Math.cos(rotation)/5;
+                joint_head.rotation.z =  Math.cos(rotation)/5;
+                joint_leg1L.rotation.x =  Math.cos(rotation)/5;
+                joint_leg1R.rotation.x =  -Math.cos(rotation)/5;
+                renderer.render(scene, camera);
+
+                degree+=1;
+                requestAnimationFrame(render);
+                
+            }
+    
+            requestAnimationFrame(render);
+        }main();
+
+    </script>
+    
+    </html>
